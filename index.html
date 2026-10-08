@@ -384,7 +384,7 @@ css.textContent='.jt-bar{position:fixed;left:50%;bottom:20px;transform:translate
 document.head.appendChild(css);
 
 var ov=document.createElement('div');ov.className='jt-login';
-ov.innerHTML='<form><div style="font:400 34px \'Instrument Serif\',serif">Edit photos</div><div class="jt-t" style="color:#BDB3A6;font-size:14px">Enter your code.</div><input type="password" autocomplete="current-password" placeholder="Code"><div class="jt-e" style="color:#E8A08A;font-size:14px;min-height:1em"></div><button type="submit">Enter</button><a href="/" style="color:#A39A8E;font-size:13px;text-align:center">Back to site</a></form>';
+ov.innerHTML='<form><div style="font:400 34px \'Instrument Serif\',serif">Edit site</div><div class="jt-t" style="color:#BDB3A6;font-size:14px">Enter your code.</div><input type="password" autocomplete="current-password" placeholder="Code"><div class="jt-e" style="color:#E8A08A;font-size:14px;min-height:1em"></div><button type="submit">Enter</button><a href="/" style="color:#A39A8E;font-size:13px;text-align:center">Back to site</a></form>';
 document.body.appendChild(ov);
 var lf=ov.querySelector('form'),li=lf.querySelector('input'),le=lf.querySelector('.jt-e');
 getContent(3).then(function(j){if(!j.hasCode)lf.querySelector('.jt-t').textContent='First time here: make up a code (at least 4 characters). You’ll use it every time you edit.';});
