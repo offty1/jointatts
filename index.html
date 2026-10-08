@@ -292,8 +292,14 @@ function applyPhoto(im,p){if(p.url)im.src=p.url;var pos=p.pos||im.dataset.origPo
 function apply(c){if(!c)return;var ph=c.photos||{},tx=c.texts||{};
   slots.forEach(function(im){var p=ph[im.dataset.slot];if(p)applyPhoto(im,p);});
   texts.forEach(function(el,i){var t=tx[i];if(t&&t.o===el.dataset.o)el.innerHTML=clean(t.h);});}
-try{var cached=JSON.parse(localStorage.getItem('jt_content')||'null');if(cached)apply(cached);}catch(e){}
-fetch(API).then(function(r){return r.json();}).then(function(j){if(!j.ok)return;var c={photos:j.photos,texts:j.texts||{}};apply(c);window.__content=c;try{localStorage.setItem('jt_content',JSON.stringify(c));}catch(e){}if(window.__onContent)window.__onContent(c);}).catch(function(){});
+var hadCache=false;try{var cached=JSON.parse(localStorage.getItem('jt_content')||'null');if(cached){apply(cached);hadCache=true;}}catch(e){}
+if(!hadCache){slots.forEach(function(im){im.style.opacity='0';im.style.transition='opacity .4s';});}
+function reveal(){slots.forEach(function(im){im.style.opacity='';});}
+var revealTimer=setTimeout(reveal,4000);
+function getContent(n){return fetch(API+(API.indexOf('?')<0?'?':'&')+'t='+Date.now()).then(function(r){return r.text();}).then(function(t){var j=JSON.parse(t);if(!j.ok)throw 0;return j;})
+  .catch(function(){if(n>0)return new Promise(function(r){setTimeout(r,800);}).then(function(){return getContent(n-1);});throw 0;});}
+getContent(3).then(function(j){var c={photos:j.photos,texts:j.texts||{}};apply(c);window.__content=c;window.__hasCode=j.hasCode;try{localStorage.setItem('jt_content',JSON.stringify(c));}catch(e){}if(window.__onContent)window.__onContent(c);})
+  .catch(function(){}).then(function(){clearTimeout(revealTimer);reveal();});
 
 /* ---------- booking form ---------- */
 var form=document.querySelector('#book form');
@@ -380,7 +386,7 @@ var ov=document.createElement('div');ov.className='jt-login';
 ov.innerHTML='<form><div style="font:400 34px \'Instrument Serif\',serif">Edit photos</div><div class="jt-t" style="color:#BDB3A6;font-size:14px">Enter your code.</div><input type="password" autocomplete="current-password" placeholder="Code"><div class="jt-e" style="color:#E8A08A;font-size:14px;min-height:1em"></div><button type="submit">Enter</button><a href="/" style="color:#A39A8E;font-size:13px;text-align:center">Back to site</a></form>';
 document.body.appendChild(ov);
 var lf=ov.querySelector('form'),li=lf.querySelector('input'),le=lf.querySelector('.jt-e');
-fetch(API).then(function(r){return r.json();}).then(function(j){if(!j.hasCode)lf.querySelector('.jt-t').textContent='First time here: make up a code (at least 4 characters). You’ll use it every time you edit.';});
+getContent(3).then(function(j){if(!j.hasCode)lf.querySelector('.jt-t').textContent='First time here: make up a code (at least 4 characters). You’ll use it every time you edit.';});
 lf.addEventListener('submit',function(e){e.preventDefault();le.textContent='Checking…';
   post({action:'login',code:li.value}).then(function(r){if(!r.ok){le.textContent=r.error||'Wrong code';return;}code=li.value.trim();ov.remove();startEdit();}).catch(function(){le.textContent='No connection. Try again.';});});
 
