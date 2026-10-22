@@ -332,7 +332,7 @@ document.querySelectorAll('[data-pick]').forEach(function(b){b.addEventListener(
 function shrink(file,max,q){return new Promise(function(res,rej){var fr=new FileReader();fr.onerror=rej;fr.onload=function(){var im=new Image();im.onerror=rej;im.onload=function(){var s=Math.min(1,max/Math.max(im.width,im.height));var c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q));};im.src=fr.result;};fr.readAsDataURL(file);});}
 function track(n,p){try{if(!EDIT&&window.gtag)gtag('event',n,p||{});}catch(e){}}
 function post(d){return fetch(API,{method:'POST',body:JSON.stringify(d)}).then(function(r){return r.json();});}
-function postProgress(d,onp){return new Promise(function(res,rej){var x=new XMLHttpRequest();x.open('POST',API);x.setRequestHeader('Content-Type','text/plain;charset=UTF-8');x.upload.onprogress=function(e){if(e.lengthComputable&&onp)onp(e.loaded/e.total);};x.upload.onload=function(){if(onp)onp(1);};x.onload=function(){try{res(JSON.parse(x.responseText));}catch(e){rej(new Error('bad response'));}};x.onerror=function(){rej(new Error('network'));};x.ontimeout=x.onerror;x.timeout=180000;x.send(JSON.stringify(d));});}
+function postProgress(d,onp){var t0=Date.now(),iv=setInterval(function(){if(onp)onp(Math.round((Date.now()-t0)/1000));},1000);return post(d).then(function(r){clearInterval(iv);return r;},function(e){clearInterval(iv);throw e;});}
 
 /* ---------- live content: photos + texts ---------- */
 var slots=[].slice.call(document.querySelectorAll('img[data-slot]'));
@@ -399,9 +399,10 @@ if(form){
     send.disabled=true;send.style.opacity='.6';msg.style.color='#8A6A3A';msg.textContent=files.length?'Preparing photos…':'Sending…';
     var photos=[];
     files.reduce(function(p,f,i){return p.then(function(){msg.textContent='Preparing photos '+(i+1)+' of '+files.length+'…';return shrink(f,1600,0.82).then(function(u){photos.push(u);});});},Promise.resolve()).then(function(){
-      msg.textContent=files.length?'Uploading photos… 0%':'Sending…';
+      var mb=photos.reduce(function(a,u){return a+u.length*0.75;},0)/1e6;
+      msg.textContent=files.length?'Uploading '+files.length+' photo'+(files.length>1?'s':'')+' ('+mb.toFixed(1)+' MB). Please keep this page open…':'Sending…';
       return postProgress({action:'book',name:val('name'),via:via,instagram:on('ig')?val('instagram'):'',email:on('em')?val('email'):'',phone:on('tx')?val('phone'):'',
-        idea:val('idea'),placement:val('placement'),size:val('size'),cover:cover.dataset.value,timing:val('timing'),budget:val('budget'),notes:val('notes'),photos:photos},function(f){if(!files.length)return;msg.textContent=f<1?'Uploading photos… '+Math.round(f*100)+'%':'Almost done, saving your request…';});
+        idea:val('idea'),placement:val('placement'),size:val('size'),cover:cover.dataset.value,timing:val('timing'),budget:val('budget'),notes:val('notes'),photos:photos},function(sec){if(files.length&&sec>=4)msg.textContent='Uploading '+files.length+' photo'+(files.length>1?'s':'')+' ('+mb.toFixed(1)+' MB)… '+sec+'s. Please keep this page open.';});
     }).then(function(r){
       if(!r.ok)throw new Error(r.error);
       form.innerHTML='<div style="padding:40px 0;display:flex;flex-direction:column;gap:14px"><p style="margin:0;font-family:\'Instrument Serif\',serif;font-size:clamp(40px,5vw,64px);line-height:1;color:#12100D">Got it. Thank you!</p><p style="margin:0;color:#5A5046;font-size:17px">I read every request myself and will get back to you soon. If you don’t hear from me within a week, check your spam folder or DM @join.tatts.</p></div>';
