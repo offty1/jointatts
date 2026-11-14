@@ -258,7 +258,7 @@ form.addEventListener('submit',function(e){
   var A=amt==='custom'?'$'+parseInt(customVal(),10):amt;
   var send=form.querySelector('.send');send.disabled=true;send.style.opacity='.6';msg.style.color='#8A6A3A';msg.textContent='Sending…';
   var idea='GIFT CERTIFICATE '+A+(v('to')?' for '+v('to'):'')+'. Format: '+fmt+'.'+(v('message')?' Message on certificate: "'+v('message')+'"':'');
-  fetch(API,{method:'POST',body:JSON.stringify({action:'book',name:v('name'),via:via,instagram:via==='Instagram'?ig:'',email:via==='Email'?em:'',phone:'',
+  fetch(API,{method:'POST',body:JSON.stringify({action:'book',name:v('name'),via:[via],instagram:via==='Instagram'?ig:'',email:via==='Email'?em:'',phone:'',
     idea:idea,placement:'Gift certificate',size:A,cover:'No',timing:v('by')?'Needed by '+v('by'):'',budget:A,notes:v('notes'),photos:[]})})
   .then(function(r){return r.json();}).then(function(r){
     if(!r.ok)throw new Error(r.error);
