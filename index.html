@@ -21,6 +21,19 @@
 <script>
 window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
 if(!/[?&]edit\b/.test(location.search)&&!/^\/edit/.test(location.pathname)){gtag('js',new Date());gtag('config','G-S8CE9NVJGQ');}
+(function(){try{var q=new URLSearchParams(location.search),r=document.referrer||'',ua=navigator.userAgent||'',s='',u=q.get('utm_source');
+if(q.get('gclid')||q.get('gbraid')||q.get('wbraid'))s='Google Ads';
+else if(u)s=[u,q.get('utm_medium'),q.get('utm_campaign')].filter(Boolean).join(' / ').slice(0,120);
+else if(q.get('fbclid'))s=/Instagram/i.test(ua)?'Instagram':'Instagram / Facebook';
+else if(/Instagram/i.test(ua)||/instagram\.com/i.test(r))s='Instagram';
+else if(/FBAN|FBAV/i.test(ua)||/facebook\.com/i.test(r))s='Facebook';
+else if(/^https?:\/\/[^\/]*google\./i.test(r))s='Google search';
+else if(/^https?:\/\/[^\/]*(bing|duckduckgo|yahoo)\./i.test(r))s='Other search';
+else if(r&&r.indexOf(location.hostname)<0)s='Link from '+r.replace(/^https?:\/\//,'').split('/')[0].slice(0,80);
+var k='jt_src',d=new Date().toISOString().slice(0,10),o=null;try{o=JSON.parse(localStorage.getItem(k)||'null');}catch(e){}
+if(s){if(!o||!o.s){try{localStorage.setItem(k,JSON.stringify({s:s,d:d}));}catch(e){}}else if(o.s!==s)s+=' (earlier: '+o.s+', '+o.d+')';}
+else if(o&&o.s)s=o.s+(o.d&&o.d!==d?' (first visit '+o.d+')':'');
+window.__jtSrc=s||'Direct / unknown';}catch(e){window.__jtSrc='';}})();
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"TattooParlor","name":"Daria · join.tatts","description":"Custom black and grey realism tattoos in Seattle.","url":"https://jointatts.com/","image":"https://jointatts.com/deer.jpg","email":"book@jointatts.com","address":{"@type":"PostalAddress","streetAddress":"3414 1/2 Fremont Ave N, Suite C","addressLocality":"Seattle","addressRegion":"WA","postalCode":"98103","addressCountry":"US"},"sameAs":["https://www.instagram.com/join.tatts/"],"paymentAccepted":"Cash"}
@@ -403,7 +416,7 @@ if(form){
       var mb=photos.reduce(function(a,u){return a+u.length*0.75;},0)/1e6;
       msg.textContent=files.length?'Uploading '+files.length+' photo'+(files.length>1?'s':'')+' ('+mb.toFixed(1)+' MB). Please keep this page open…':'Sending…';
       return postProgress({action:'book',name:val('name'),via:via,instagram:on('ig')?val('instagram'):'',email:on('em')?val('email'):'',phone:on('tx')?val('phone'):'',
-        idea:val('idea'),placement:val('placement'),size:val('size'),cover:cover.dataset.value,timing:val('timing'),budget:val('budget'),notes:val('notes'),photos:photos},function(sec){if(files.length&&sec>=4)msg.textContent='Uploading '+files.length+' photo'+(files.length>1?'s':'')+' ('+mb.toFixed(1)+' MB)… '+sec+'s. Please keep this page open.';});
+        idea:val('idea'),placement:val('placement'),size:val('size'),cover:cover.dataset.value,timing:val('timing'),budget:val('budget'),notes:val('notes'),photos:photos,source:window.__jtSrc||''},function(sec){if(files.length&&sec>=4)msg.textContent='Uploading '+files.length+' photo'+(files.length>1?'s':'')+' ('+mb.toFixed(1)+' MB)… '+sec+'s. Please keep this page open.';});
     }).then(function(r){
       if(!r.ok)throw new Error(r.error);
       form.innerHTML='<div style="padding:40px 0;display:flex;flex-direction:column;gap:14px"><p style="margin:0;font-family:\'Instrument Serif\',serif;font-size:clamp(40px,5vw,64px);line-height:1;color:#12100D">Got it. Thank you!</p><p style="margin:0;color:#5A5046;font-size:17px">I read every request myself and will get back to you soon. If you don’t hear from me within a week, check your spam folder or DM @join.tatts.</p></div>';
