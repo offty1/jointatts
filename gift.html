@@ -21,6 +21,19 @@
 <script>
 window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
 gtag('js',new Date());gtag('config','G-S8CE9NVJGQ');
+(function(){try{var q=new URLSearchParams(location.search),r=document.referrer||'',ua=navigator.userAgent||'',s='',u=q.get('utm_source');
+if(q.get('gclid')||q.get('gbraid')||q.get('wbraid'))s='Google Ads';
+else if(u)s=[u,q.get('utm_medium'),q.get('utm_campaign')].filter(Boolean).join(' / ').slice(0,120);
+else if(q.get('fbclid'))s=/Instagram/i.test(ua)?'Instagram':'Instagram / Facebook';
+else if(/Instagram/i.test(ua)||/instagram\.com/i.test(r))s='Instagram';
+else if(/FBAN|FBAV/i.test(ua)||/facebook\.com/i.test(r))s='Facebook';
+else if(/^https?:\/\/[^\/]*google\./i.test(r))s='Google search';
+else if(/^https?:\/\/[^\/]*(bing|duckduckgo|yahoo)\./i.test(r))s='Other search';
+else if(r&&r.indexOf(location.hostname)<0)s='Link from '+r.replace(/^https?:\/\//,'').split('/')[0].slice(0,80);
+var k='jt_src',d=new Date().toISOString().slice(0,10),o=null;try{o=JSON.parse(localStorage.getItem(k)||'null');}catch(e){}
+if(s){if(!o||!o.s){try{localStorage.setItem(k,JSON.stringify({s:s,d:d}));}catch(e){}}else if(o.s!==s)s+=' (earlier: '+o.s+', '+o.d+')';}
+else if(o&&o.s)s=o.s+(o.d&&o.d!==d?' (first visit '+o.d+')':'');
+window.__jtSrc=s||'Direct / unknown';}catch(e){window.__jtSrc='';}})();
 </script>
 <style>
 :root{--ink:#F1EADF;--soft:#A39A8E;--line:#3E362E;--paper:#12100D;--acc:#D9B98C}
@@ -259,7 +272,7 @@ form.addEventListener('submit',function(e){
   var send=form.querySelector('.send');send.disabled=true;send.style.opacity='.6';msg.style.color='#8A6A3A';msg.textContent='Sending…';
   var idea='GIFT CERTIFICATE '+A+(v('to')?' for '+v('to'):'')+'. Format: '+fmt+'.'+(v('message')?' Message on certificate: "'+v('message')+'"':'');
   fetch(API,{method:'POST',body:JSON.stringify({action:'book',name:v('name'),via:[via],instagram:via==='Instagram'?ig:'',email:via==='Email'?em:'',phone:'',
-    idea:idea,placement:'Gift certificate',size:A,cover:'No',timing:v('by')?'Needed by '+v('by'):'',budget:A,notes:v('notes'),photos:[]})})
+    idea:idea,placement:'Gift certificate',size:A,cover:'No',timing:v('by')?'Needed by '+v('by'):'',budget:A,notes:v('notes'),photos:[],source:window.__jtSrc||'',gift:{to:v('to'),from:v('name'),amount:A,message:v('message')}})})
   .then(function(r){return r.json();}).then(function(r){
     if(!r.ok)throw new Error(r.error);
     var pvb=document.querySelector('.pv');if(pvb&&form.contains(pvb))form.parentNode.insertBefore(pvb,form);
