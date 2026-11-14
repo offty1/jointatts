@@ -120,9 +120,10 @@ footer{border-top:1px solid #2E2822}
 </div>
 
 <div class="cards" role="group" aria-label="Choose an amount">
-<button type="button" class="card" data-amt="$400" aria-pressed="false"><span class="lab">≈ 2 hours</span><span class="amt">$400</span><span class="hint">A smaller piece or a first session</span></button>
-<button type="button" class="card" data-amt="$800" aria-pressed="true"><span class="lab">≈ 4 hours</span><span class="amt">$800</span><span class="hint">A longer session</span></button>
+<button type="button" class="card" data-amt="$400" aria-pressed="false"><span class="lab">≈ 2 hours</span><span class="amt">$400</span><span class="hint">A smaller piece</span></button>
+<button type="button" class="card" data-amt="$800" aria-pressed="true"><span class="lab">≈ 4 hours</span><span class="amt">$800</span><span class="hint">A medium-size piece</span></button>
 <button type="button" class="card" data-amt="$1200" aria-pressed="false"><span class="lab">≈ 6 hours</span><span class="amt">$1200</span><span class="hint">A full session</span></button>
+<button type="button" class="card" data-amt="custom" aria-pressed="false"><span class="lab">Any amount</span><span class="amt">$ …</span><span class="hint">Choose your own, from $100</span></button>
 </div>
 </section>
 
@@ -154,7 +155,9 @@ footer{border-top:1px solid #2E2822}
 <button type="button" class="chip" data-amt="$400" aria-pressed="false">$400 · 2h</button>
 <button type="button" class="chip" data-amt="$800" aria-pressed="true">$800 · 4h</button>
 <button type="button" class="chip" data-amt="$1200" aria-pressed="false">$1200 · 6h</button>
+<button type="button" class="chip" data-amt="custom" aria-pressed="false">Other amount</button>
 </div>
+<label id="customL" style="margin-top:14px" hidden>Your amount, $<input name="custom" type="number" inputmode="numeric" min="100" step="10" placeholder="e.g. 300"></label>
 </fieldset>
 <div class="row">
 <label>To<input name="to" placeholder="Their name" maxlength="40"></label>
@@ -225,13 +228,14 @@ var API='https://script.google.com/macros/s/AKfycbxVmxxSmmO_2StpK4qHd3b40zTPCAo-
 function track(n,p){try{gtag('event',n,p||{});}catch(e){}}
 var amt='$800',fmt='PDF by email',via='Email';
 function pick(sel,attr,val){document.querySelectorAll(sel).forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute(attr)===val?'true':'false');});}
-function setAmt(a){amt=a;pick('[data-amt]','data-amt',a);var c=document.getElementById('cAmt');if(c)c.textContent=a.replace('$','');}
+function customVal(){var e=document.querySelector('#gf [name=custom]');var n=e?parseInt(e.value,10):NaN;return isNaN(n)?'':String(n);}
+function setAmt(a){amt=a;pick('[data-amt]','data-amt',a);var cl=document.getElementById('customL');if(cl)cl.hidden=a!=='custom';var c=document.getElementById('cAmt');if(c)c.textContent=a==='custom'?customVal():a.replace('$','');if(a==='custom'){var ci=document.querySelector('#gf [name=custom]');if(ci&&document.activeElement!==ci)setTimeout(function(){ci.focus({preventScroll:true});},350);}}
 function live(){var f=document.getElementById('gf');if(!f)return;var g=function(n){var e=f.querySelector('[name="'+n+'"]');return e?e.value.trim():'';};
   document.getElementById('cFor').textContent=g('to');
   document.getElementById('cFrom').textContent=g('name');
   document.getElementById('cNote').textContent=g('message');
   var t=f.querySelector('[name=message]');document.getElementById('cnt').textContent=(t?t.value.length:0)+'/90';}
-document.addEventListener('input',function(e){if(e.target.closest('#gf')){live();showSide('back');}});
+document.addEventListener('input',function(e){if(e.target.closest('#gf')){if(e.target.name==='custom'&&amt==='custom')document.getElementById('cAmt').textContent=customVal();live();showSide('back');}});
 function showSide(sd){document.getElementById('cImg').src=sd==='front'?'gift-front.jpg':'gift-back.jpg';document.getElementById('cFields').hidden=sd==='front';document.querySelectorAll('[data-side]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.side===sd?'true':'false');});}
 document.querySelectorAll('[data-side]').forEach(function(b){b.addEventListener('click',function(){showSide(b.dataset.side);});});
 (function(){var pv=document.querySelector('.pv'),order=document.querySelector('.order'),msgL=document.querySelector('#gf [name=message]').closest('label'),mq=window.matchMedia('(max-width:900px)');
@@ -250,15 +254,17 @@ form.addEventListener('submit',function(e){
   var em=v('email'),ig=v('instagram');
   if(via==='Email'&&!/^\S+@\S+\.\S+$/.test(em)){msg.textContent='Please add a valid email.';form.querySelector('[name=email]').focus();return;}
   if(via==='Instagram'&&!ig){msg.textContent='Please add your Instagram.';form.querySelector('[name=instagram]').focus();return;}
+  if(amt==='custom'){var cv=parseInt(customVal(),10);if(!(cv>=100)){msg.textContent='Please enter an amount of $100 or more.';form.querySelector('[name=custom]').focus();return;}}
+  var A=amt==='custom'?'$'+parseInt(customVal(),10):amt;
   var send=form.querySelector('.send');send.disabled=true;send.style.opacity='.6';msg.style.color='#8A6A3A';msg.textContent='Sending…';
-  var idea='GIFT CERTIFICATE '+amt+(v('to')?' for '+v('to'):'')+'. Format: '+fmt+'.'+(v('message')?' Message on certificate: "'+v('message')+'"':'');
+  var idea='GIFT CERTIFICATE '+A+(v('to')?' for '+v('to'):'')+'. Format: '+fmt+'.'+(v('message')?' Message on certificate: "'+v('message')+'"':'');
   fetch(API,{method:'POST',body:JSON.stringify({action:'book',name:v('name'),via:via,instagram:via==='Instagram'?ig:'',email:via==='Email'?em:'',phone:'',
-    idea:idea,placement:'Gift certificate',size:amt,cover:'No',timing:v('by')?'Needed by '+v('by'):'',budget:amt,notes:v('notes'),photos:[]})})
+    idea:idea,placement:'Gift certificate',size:A,cover:'No',timing:v('by')?'Needed by '+v('by'):'',budget:A,notes:v('notes'),photos:[]})})
   .then(function(r){return r.json();}).then(function(r){
     if(!r.ok)throw new Error(r.error);
     var pvb=document.querySelector('.pv');if(pvb&&form.contains(pvb))form.parentNode.insertBefore(pvb,form);
-    form.innerHTML='<div style="padding:30px 0;display:flex;flex-direction:column;gap:14px"><p class="caps" style="margin:0;font-size:clamp(40px,5vw,64px)">Thank you!</p><p style="margin:0;color:#5A5046">I got your request for a '+amt+' certificate and will reply soon with the payment details. If you don’t hear from me within a couple of days, check your spam folder or DM @join.tatts.</p></div>';
-    track('generate_lead',{method:'gift_form',amount:amt});
+    form.innerHTML='<div style="padding:30px 0;display:flex;flex-direction:column;gap:14px"><p class="caps" style="margin:0;font-size:clamp(40px,5vw,64px)">Thank you!</p><p style="margin:0;color:#5A5046">I got your request for a '+A+' certificate and will reply soon with the payment details. If you don’t hear from me within a couple of days, check your spam folder or DM @join.tatts.</p></div>';
+    track('generate_lead',{method:'gift_form',amount:A});
   }).catch(function(){send.disabled=false;send.style.opacity='';msg.style.color='#B4442C';msg.textContent='Something went wrong. Please try again, or email book@jointatts.com.';});
 });
 })();
